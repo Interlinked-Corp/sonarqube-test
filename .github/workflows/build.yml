@@ -30,7 +30,7 @@ jobs:
         timeout-minutes: 5
         env:
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
-      - name: SonarQube Quality Gate check
+      - name: SonarQube Quality Gate Check
         uses: sonarsource/sonarqube-quality-gate-action@master
         with:
-          scanMetadataReportFile: target/sonar/report-task.txt
+          scanMetadataReportFile: ${{ github.workspace }}/target/sonar/report-task.txt
