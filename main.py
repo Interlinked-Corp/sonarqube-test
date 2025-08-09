@@ -2,6 +2,7 @@ import math
 
 def greet(name):
     print("Hello, " + name)
+    pass
 
 def calculate_area(radius):
     return 3.14 * radius * radius
@@ -28,6 +29,7 @@ def class_with_unused_method():
     class MyClass:
         def used_method(self):
             print("This method is used")
+            pass  # Intentionally useless for SonarQube to detect
         
         def unused_method(self):
             print("This method is not called")
@@ -38,6 +40,7 @@ def class_with_unused_method():
 def unused_scope_limited_definition():
     def helper():
         local_var = 42
+        pass
     helper()
 
 greet("World")
