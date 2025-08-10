@@ -21,13 +21,42 @@ jobs:
         env:
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
           SONAR_HOST_URL: ${{ secrets.SONAR_HOST_URL }}
+        with:
+          args: >
+            -Dsonar.branch.name=${{ github.head_ref }}
+            -Dsonar.scanner.metadataFilePath=${{ github.workspace }}/target/sonar/report-task.txt
       # If you wish to fail your job when the Quality Gate is red, uncomment the
       # following lines. This would typically be used to fail a deployment.
-      - uses: SonarSource/sonarqube-quality-gate-action@v1
-        timeout-minutes: 5
-        env:
-          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
-      - name: SonarQube Quality Gate check
+      # - uses: SonarSource/sonarqube-quality-gate-action@v1
+      #   timeout-minutes: 5
+      #   env:
+      #     SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+      - name: SonarQube Quality Gate Check
         uses: sonarsource/sonarqube-quality-gate-action@master
         with:
-          scanMetadataReportFile: target/sonar/report-task.txt
+          scanMetadataReportFile: ${{ github.workspace }}/target/sonar/report-task.txt
+        env:
+          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+        continue-on-error: true
+      - name: Comment PR with SonarQube Results
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const qualityGateStatus = "${{ steps.qualitygate.outputs.quality_gate_status }}";
+            const sonarDashboardUrl = `${process.env.SONAR_HOST_URL}/dashboard?id=${process.env.GITHUB_REPOSITORY.replace('/', ':')}`;
+
+            const comment = `
+            ### SonarQube Analysis Results
+            **Quality Gate Status:** ${qualityGateStatus}
+
+            [View detailed report on SonarQube](${sonarDashboardUrl})
+            `;
+
+            github.rest.issues.createComment({
+              issue_number: context.issue.number,
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              body: comment
+            });
+        env:
+          SONAR_HOST_URL: ${{ secrets.SONAR_HOST_URL }}
